@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="demo_brand_2_v5">#A3D4FF</color>
+    <color name="demo_text_always_white_v5">#FFFFFF</color>
+    <color name="demo_brand_4_v5">#52A3FF</color>
+    <color name="demo_orange_2_v5">#FFECD4</color>
+    <color name="demo_orange_5_v5">#FFAE6B</color>
+    <color name="demo_red_funct_6_v5">#F7594B</color>
+    <color name="demo_green_funct_6_v5">#2BC235</color>
+</resources>

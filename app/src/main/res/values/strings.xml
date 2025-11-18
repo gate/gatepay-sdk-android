@@ -1,0 +1,36 @@
+<resources>
+  <string name="app_name">GatePay Demo</string>
+
+  <!-- Main Activity -->
+  <string name="btn_open_cashier">Open Gate Cashier</string>
+  <string name="btn_test_order_query">Test Order Query</string>
+  <string name="btn_language">Language</string>
+  <string name="btn_color">Color</string>
+  <string name="btn_day_night">Day/Night</string>
+  <string name="hint_prepay_id">Enter prepay ID</string>
+  <string name="log_default">Log</string>
+
+  <!-- Toast Messages -->
+  <string name="toast_network_error">Network request failed: %1$s</string>
+  <string name="toast_enter_prepay_id">Please enter prepay ID</string>
+  <string name="toast_signature_failed">Signature retrieval failed: %1$s</string>
+
+  <!-- Dialog Messages -->
+  <string name="dialog_switch_language">Switch Language</string>
+  <string name="dialog_theme_color">Theme Color</string>
+  <string name="dialog_day_night">Day / Night Mode</string>
+  <string name="dialog_cancel">Cancel</string>
+  <string name="dialog_ok">OK</string>
+
+  <!-- Theme Options -->
+  <string name="theme_default">Default</string>
+  <string name="theme_light_blue">Light Blue</string>
+  <string name="theme_red">Red</string>
+  <string name="theme_auto">Auto</string>
+  <string name="theme_day">Day</string>
+  <string name="theme_night">Night</string>
+
+  <!-- Log Messages -->
+  <string name="log_sdk_open_success">GatePay SDK opened successfully</string>
+  <string name="log_sdk_open_failed">GatePay SDK failed to open\nError code: %1$d\nMessage: %2$s</string>
+</resources>
