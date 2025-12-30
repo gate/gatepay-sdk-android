@@ -45,5 +45,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation("com.gateio.sdk:gatepay-sdk:2.0.0")  // VERSION 对应 提供的 repos 版本
+    implementation("com.gateio.sdk:gatepay-sdk:3.0.0")  // VERSION 对应 提供的 repos 版本
 }
