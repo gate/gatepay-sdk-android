@@ -10,7 +10,10 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven("https://jitpack.io")
-        maven { url = uri("${rootProject.projectDir}/repos") }  // 引用本地 repos
+        // Option 1: Reference GitHub Gate Repos Directly
+        maven { url = uri("https://raw.githubusercontent.com/gate/gatepay-sdk-android/main/repos") }
+        // Option 2: Use Local Repos
+        maven { url = uri("${rootProject.projectDir}/repos") }
     }
 }
 dependencyResolutionManagement {
@@ -19,7 +22,10 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven("https://jitpack.io")
-        maven { url = uri("${rootProject.projectDir}/repos") }  // 引用本地 repos
+        // Option 1: Reference GitHub Gate Repos Directly
+        maven { url = uri("https://raw.githubusercontent.com/gate/gatepay-sdk-android/main/repos") }
+        // Option 2: Use Local Repos
+        maven { url = uri("${rootProject.projectDir}/repos") }
     }
 }
 

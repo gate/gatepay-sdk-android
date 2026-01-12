@@ -1,5 +1,7 @@
 # Gate Pay Android SDK 接入指南
 
+[English](README.md) | 简体中文
+
 ## 概述
 
 Gate Pay Android SDK 是一个为 Android 应用提供加密货币支付功能的 SDK。它支持多种支付方式，包括 Gate 支付、钱包支付、扫码支付，并提供了完整的支付流程和 UI 自定义能力。
@@ -18,13 +20,56 @@ Gate Pay Android SDK 是一个为 Android 应用提供加密货币支付功能�
 
 ### 步骤 1：添加依赖
 
-**① 将 repos 文件夹放到项目根目录**
+#### ① 配置依赖仓库 — `settings.gradle.kts`
 
-💡 如需升级 SDK 版本可将 repos 中的旧版本移除掉，引用后将 "gatepay-sdk:VERSION" 修改为最新版本
+**方式一：直接引用 GitHub Gate repos**
 
-**② 配置仓库**—`settings.gradle.kts`
+```kotlin
+allprojects {
+    repositories {
+        mavenCentral()
+        maven("https://jitpack.io")
+        maven { url = uri("https://raw.githubusercontent.com/gate/gatepay-sdk-android/main/repos") } // GitHub Gate repos
+    }
+}
+```
 
-**③ 添加依赖**—`build.gradle.kts`
+**方式二：引用本地 repos**
+
+1）将 Gate 提供的 `repos` 文件夹复制到项目根目录：
+
+```text
+YourProject/
+├── repos/              ← Gate 提供的 SDK 仓库文件夹
+├── app/
+├── settings.gradle.kts
+└── build.gradle.kts
+```
+2）引用本地 repos：
+```kotlin
+allprojects {
+    repositories {
+        mavenCentral()
+        maven("https://jitpack.io")
+        maven { url = uri("${rootProject.projectDir}/repos") }  // 本地 repos
+    }
+}
+```
+> 💡 本地 repos 如需升级 SDK 版本，可将 `repos` 中的旧版本移除，并将依赖版本号修改为最新版本
+
+#### ② 新增依赖 — `build.gradle.kts`
+
+```kotlin
+dependencies {
+    implementation("com.gateio.sdk:gatepay-sdk:VERSION")  // 替换为 repos 中的实际版本号
+}
+
+android {
+    defaultConfig {
+        manifestPlaceholders["GATEPAY_SCHEME"] = "YOUR_SCHEME_HERE"  // Gate 提供的 Scheme
+    }
+}
+```
 
 💡 找不到提供的 Scheme？可以调用 `GatePaySDK.getSchemeByClientId()` 传入 `clientId` 获取。
 
@@ -153,6 +198,10 @@ val orderListener = object : OrderPageListener {
 
 **支持的语言代码：**
 
+```kotlin
+GatePaySDK.applyUiSettings(UiSettings(languageCode = "zh"))
+```
+
 | 代码 | 语言 | 代码 | 语言 |
 |------|------|------|------|
 | `zh` | 简体中文 | `ja` | 日语 |
@@ -167,11 +216,30 @@ val orderListener = object : OrderPageListener {
 
 **主题类型：**
 
+```kotlin
+GatePaySDK.applyUiSettings(UiSettings(themeType = PayThemeType.THEME_MODE_NIGHT))
+```
+
 - `THEME_MODE_AUTO`—跟随系统（默认）
 - `THEME_MODE_DAY`—白天模式
 - `THEME_MODE_NIGHT`—夜间模式
 
 **PaySdkColor 颜色配置：**
+
+```kotlin
+GatePaySDK.applyUiSettings(
+    UiSettings(
+        customColor = PaySdkColor(
+            brandColor = R.color.your_brand_color,
+            brandTagTextColor = R.color.your_brand_text_color,
+            buttonTextColor = R.color.your_button_text_color,
+            buttonTextSecondaryColor = R.color.your_button_text_sec,
+            buttonBackgroundColor = R.color.your_button_bg,
+            buttonBackgroundSecondaryColor = R.color.your_button_bg_sec
+        )
+    )
+)
+```
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
@@ -268,6 +336,48 @@ SDK 已内置混淆规则，无需额外配置。如有问题可添加：`-keep 
 
 确认在 `Application.onCreate` 中调用了 `GatePaySDK.init`，且初始化在支付调用之前执行。
 
+## 更多版本选择
+
+如有特殊需求，可选择其他版本：
+
+| 版本                 | 依赖 | 初始化 / 调用类名      | 适用场景                          |
+|--------------------|------|-----------------|-------------------------------|
+| **Full（当前版本<推荐>）** | `gatepay-sdk` | `GatePaySDK`    | 完整收银台，支持扫码转账、钱包支付（包含：WalletConnect、Phantom、Bitget Wallet） |
+| **Simple**         | `gatepay-sdk-simple` | `GatePaySimple` | 轻量收银台，包体积更小，仅支持扫码转账，不支持钱包支付     |
+| **Lite**           | `gatepay-sdk-lite` | `GatePayLite`   | 仅支持跳转 Gate App 支付           |
+
+**切换方式：** 替换依赖 + 类名
+
+**Simple**
+```kotlin
+implementation("com.gateio.sdk:gatepay-sdk-simple:VERSION")
+GatePaySimple.init()  // 参数同 Full
+GatePaySimple.openGatePay()  // 参数同 Full
+```
+
+**Lite**
+```kotlin
+implementation("com.gateio.sdk:gatepay-sdk-lite:VERSION")
+GatePayLite.init(isDebug, applicationContext, clientId)  // 可只传 3 个参数
+GatePayLite.openGatePay()  // 参数同 Full
+```
+
+> 💡 **Lite 需自行处理回调：** Gate App 支付完成后通过 Deep Link 回调，需在 `AndroidManifest.xml` 配置接收 Activity：
+> ```xml
+> <activity android:name=".YourCallbackActivity" android:exported="true">
+>     <intent-filter>
+>         <action android:name="android.intent.action.VIEW" />
+>         <category android:name="android.intent.category.DEFAULT" />
+>         <data android:scheme="gatepay******" android:host="payment" />
+>     </intent-filter>
+> </activity>
+> ```
+> ⚠️ `gatepay******` 为 Gate 根据 clientId 生成的 Scheme，请替换为实际值
+>
+> 解析 `intent.data` 获取结果：`isSuccess`（1=成功/0=失败/2=取消）、`prepayId`（预支付ID）
+>
+> 示例：`gatepaya1b2c3://payment?isSuccess=1&source=gatePay&prepayId=123435567`
+
 ## 技术支持
 
 如有疑问或需要帮助，请联系：
@@ -277,7 +387,7 @@ SDK 已内置混淆规则，无需额外配置。如有问题可添加：`-keep 
 
 ## 版本更新日志
 
-### v3.0.0（当前版本）
+### v3.0.1（当前版本）
 
 - ✨ 收银台 UI 全新改版
 - 🔄 新增多币种、多网络闪兑支付

@@ -1,5 +1,7 @@
 # Gate Pay Android SDK Integration Guide
 
+English | [简体中文](README.zh-CN.md)
+
 ## Overview
 
 The Gate Pay Android SDK enables cryptocurrency payment capabilities within Android applications. It supports multiple payment methods, including Gate Pay, wallet payments, and QR code payments, and provides a complete payment workflow with flexible UI customization options.
@@ -18,13 +20,56 @@ The Gate Pay Android SDK enables cryptocurrency payment capabilities within Andr
 
 ### Step 1: Add Dependencies
 
-**① Place the repos directory to the project root.**
+#### ① Configure Dependency Repositories — `settings.gradle.kts`
 
-💡 To upgrade the SDK version, remove the old version from repos and update gatepay-sdk:VERSION to the latest version after referencing it.
+**Option 1: Reference GitHub Gate Repos Directly**
 
-**② Configure the Repository:** Edit `settings.gradle.kts`.
+```kotlin
+allprojects {
+    repositories {
+        mavenCentral()
+        maven("https://jitpack.io")
+        maven { url = uri("https://raw.githubusercontent.com/gate/gatepay-sdk-android/main/repos") } // GitHub Gate repos
+    }
+}
+```
 
-**③ Add Dependencies:** Edit `build.gradle.kts`.
+**Option 2: Use Local Repos**
+
+1）Copy the repos folder provided by Gate to the project root directory:
+
+```text
+YourProject/
+├── repos/              ← SDK repository folder provided by Gate
+├── app/
+├── settings.gradle.kts
+└── build.gradle.kts
+```
+2）Reference the local repos:
+```kotlin
+allprojects {
+    repositories {
+        mavenCentral()
+        maven("https://jitpack.io")
+        maven { url = uri("${rootProject.projectDir}/repos") }  // Local repos
+    }
+}
+```
+> 💡 To upgrade the SDK version when using local repos, remove the old version from the `repos` directory and update the dependency version to the latest one.
+
+#### ② Add Dependency — `build.gradle.kts`
+
+```kotlin
+dependencies {
+    implementation("com.gateio.sdk:gatepay-sdk:VERSION")  // Replace with the actual version in repos
+}
+
+android {
+    defaultConfig {
+        manifestPlaceholders["GATEPAY_SCHEME"] = "YOUR_SCHEME_HERE"  // Scheme provided by Gate
+    }
+}
+```
 
 💡 **Tip:** If you cannot find the provided Scheme, you can call `GatePaySDK.getSchemeByClientId()` and pass in the `clientId` to retrieve it.
 
@@ -153,6 +198,10 @@ val orderListener = object : OrderPageListener {
 
 **Supported Language Codes:**
 
+```kotlin
+GatePaySDK.applyUiSettings(UiSettings(languageCode = "zh"))
+```
+
 | Code | Language | Code | Language |
 |------|----------|------|----------|
 | `zh` | Simplified Chinese | `ja` | Japanese |
@@ -167,11 +216,30 @@ val orderListener = object : OrderPageListener {
 
 **Theme Modes:**
 
+```kotlin
+GatePaySDK.applyUiSettings(UiSettings(themeType = PayThemeType.THEME_MODE_NIGHT))
+```
+
 - `THEME_MODE_AUTO`—Follows system settings (default)
 - `THEME_MODE_DAY`—Light mode
 - `THEME_MODE_NIGHT`—Dark mode
 
 **PaySdkColor Configuration:**
+
+```kotlin
+GatePaySDK.applyUiSettings(
+    UiSettings(
+        customColor = PaySdkColor(
+            brandColor = R.color.your_brand_color,
+            brandTagTextColor = R.color.your_brand_text_color,
+            buttonTextColor = R.color.your_button_text_color,
+            buttonTextSecondaryColor = R.color.your_button_text_sec,
+            buttonBackgroundColor = R.color.your_button_bg,
+            buttonBackgroundSecondaryColor = R.color.your_button_bg_sec
+        )
+    )
+)
+```
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -268,6 +336,48 @@ Supported currencies depend on the merchant's configuration. Refer to the Gate P
 
 Ensure that `GatePaySDK.init` is called in `Application.onCreate` and that initialization occurs before any payment request is made.
 
+## More Version Options
+
+If you have specific requirements, you may choose from the following versions:
+
+| Version                 | Dependency | Init/Entry Class      | Applicable Scenarios                          |
+|--------------------|------|-----------------|-------------------------------|
+| **Full(Current Version · Recommended)** | `gatepay-sdk` | `GatePaySDK`    | Full-featured checkout supporting QR code transfers and wallet payments (including WalletConnect, Phantom, and Bitget Wallet) |
+| **Simple**         | `gatepay-sdk-simple` | `GatePaySimple` | Lightweight checkout with smaller package size; supports QR code transfers only, wallet payments are not supported     |
+| **Lite**           | `gatepay-sdk-lite` | `GatePayLite`   | Supports redirecting users to the Gate App for payment only           |
+
+**How to switch:**Replace the dependency and the corresponding class name.
+
+**Simple**
+```kotlin
+implementation("com.gateio.sdk:gatepay-sdk-simple:VERSION")
+GatePaySimple.init()  // Parameters are the same as Full
+GatePaySimple.openGatePay()  // Parameters are the same as Full
+```
+
+**Lite**
+```kotlin
+implementation("com.gateio.sdk:gatepay-sdk-lite:VERSION")
+GatePayLite.init(isDebug, applicationContext, clientId)  // Only 3 parameters are required
+GatePayLite.openGatePay()  // Parameters are the same as Full
+```
+
+> 💡 **Callback handling for Lite:** After payment is completed in the Gate App, the result is returned via Deep Link. You must configure a callback Activity in AndroidManifest.xml:
+> ```xml
+> <activity android:name=".YourCallbackActivity" android:exported="true">
+>     <intent-filter>
+>         <action android:name="android.intent.action.VIEW" />
+>         <category android:name="android.intent.category.DEFAULT" />
+>         <data android:scheme="gatepay******" android:host="payment" />
+>     </intent-filter>
+> </activity>
+> ```
+> ⚠️ `gatepay******` is a Scheme generated by Gate based on the clientId. Please replace it with the actual value.
+>
+> Parse intent.data to obtain the result parameters: `isSuccess`（1 = Success / 0 = Failed / 2 = Canceled）、`prepayId`（Prepay order ID）
+>
+> Example: `gatepaya1b2c3://payment?isSuccess=1&source=gatePay&prepayId=123435567`
+
 ## Technical Support
 
 If you have questions or need assistance, contact us via:
@@ -277,7 +387,7 @@ If you have questions or need assistance, contact us via:
 
 ## Changelog
 
-### v3.0.0 (Current Version)
+### v3.0.1 (Current Version)
 
 - ✨ Introduced a fully redesigned checkout UI
 - 🔄 Added multi-currency, multi-network instant conversion for payments
